@@ -24,12 +24,65 @@ Meteor.startup(function() {
 					key: 'mobex',
 					i18nLabel: 'Mobex',
 				},
+				{
+					key: 'whatsappapi',
+					i18nLabel: 'WhatsappApi',
+				},
 			],
 			i18nLabel: 'Service',
 		});
 
 		this.add('SMS_Default_Omnichannel_Department', '', {
 			type: 'string',
+		});
+
+		this.section('WhatsappApi', function() {
+			this.add('SMS_WhatsappApi_Account_SID', '', {
+				type: 'string',
+				enableQuery: {
+					_id: 'SMS_Service',
+					value: 'whatsappapi',
+				},
+				i18nLabel: 'Account_SID',
+				secret: true,
+			});
+			this.add('SMS_WhatsappApi_authToken', '', {
+				type: 'string',
+				enableQuery: {
+					_id: 'SMS_Service',
+					value: 'whatsappapi',
+				},
+				i18nLabel: 'Auth_Token',
+				secret: true,
+			});
+			this.add('SMS_WhatsappApi_Number_Send', '', {
+				type: 'string',
+				enableQuery: {
+					_id: 'SMS_Service',
+					value: 'whatsappapi',
+				},
+				i18nLabel: 'Twilio_Number_Send',
+				secret: true,
+			});
+			this.add('SMS_WhatsappApi_FileUpload_Enabled', true, {
+				type: 'boolean',
+				enableQuery: {
+					_id: 'SMS_Service',
+					value: 'whatsappapi',
+				},
+				i18nLabel: 'FileUpload_Enabled',
+				secret: true,
+			});
+			this.add('SMS_WhatsappApi_FileUpload_MediaTypeWhiteList', 'image/*,audio/*,video/*,text/*,application/pdf', {
+				type: 'string',
+				enableQuery: {
+					_id: 'SMS_Service',
+					value: 'whatsappapi',
+				},
+				i18nLabel: 'FileUpload_MediaTypeWhiteList',
+				i18nDescription: 'FileUpload_MediaTypeWhiteListDescription',
+				secret: true,
+			});
 		});
 
 		this.section('Twilio', function() {
