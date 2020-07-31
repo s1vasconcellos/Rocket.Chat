@@ -320,8 +320,6 @@ Template.sidebarHeader.events({
 										type: 'open',
 										id: 'account',
 										action: () => {
-											SideNav.setFlex('accountFlex');
-											SideNav.openFlex();
 											FlowRouter.go('account');
 											popover.close();
 										},
