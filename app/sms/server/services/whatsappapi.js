@@ -31,95 +31,45 @@ class WhatsappApi {
 		let numMedia = 0;
 
 		const returnData = {
-			from: data.From,
-			to: data.To,
-			body: data.Body,
+			from: data.contacts[0].wa_id,
+			to: '22222222',//data.To,
+			body: data.messages.text.body,
 
-			extra: {
-				toCountry: data.ToCountry,
-				toState: data.ToState,
-				toCity: data.ToCity,
-				toZip: data.ToZip,
-				fromCountry: data.FromCountry,
-				fromState: data.FromState,
-				fromCity: data.FromCity,
-				fromZip: data.FromZip,
-				fromLatitude: data.Latitude,
-				fromLongitude: data.Longitude,
-			},
+			//extra: {
+			//	toCountry: data.ToCountry,
+			//	toState: data.ToState,
+			//	toCity: data.ToCity,
+			//	toZip: data.ToZip,
+			//	fromCountry: data.FromCountry,
+			//	fromState: data.FromState,
+			//	fromCity: data.FromCity,
+			//	fromZip: data.FromZip,
+			//	fromLatitude: data.Latitude,
+			//	fromLongitude: data.Longitude,
+			//},
 		};
-
-		if (data.NumMedia) {
-			numMedia = parseInt(data.NumMedia, 10);
-		}
-
-		if (isNaN(numMedia)) {
-			console.error(`Error parsing NumMedia ${ data.NumMedia }`);
-			return returnData;
-		}
-
-		returnData.media = [];
-
-		for (let mediaIndex = 0; mediaIndex < numMedia; mediaIndex++) {
-			const media = {
-				url: '',
-				contentType: '',
-			};
-
-			const mediaUrl = data[`MediaUrl${ mediaIndex }`];
-			const contentType = data[`MediaContentType${ mediaIndex }`];
-
-			media.url = mediaUrl;
-			media.contentType = contentType;
-
-			returnData.media.push(media);
-		}
-
 		return returnData;
 	}
 
 	send(fromNumber, toNumber, message, extraData) {
-		const client = twilio(this.accountSid, this.authToken);
-		let body = message;
 
-		let mediaUrl;
-		const defaultLanguage = settings.get('Language') || 'en';
-		if (extraData && extraData.fileUpload) {
-			const { rid, userId, fileUpload: { size, type, publicFilePath } } = extraData;
-			const user = userId ? Meteor.users.findOne(userId) : null;
-			const lng = (user && user.language) || defaultLanguage;
+		var request = require('request');
+		var options = {
+		'method': 'POST',
+		'url': 'https://host.docker.internal/api/v1/whatsapp/mensagens/nova',
+		'headers': {
+			'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE1Njk2MTU0MTQsImV4cCI6MTYwMTE1MTQxNCwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.mREwY5O_QMFqgWUUPiZEAOCWIFa7zEdkdiXgZo7dHW0',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({"mensagem":message,"destinatario":toNumber})
 
-			let reason;
-			if (!this.fileUploadEnabled) {
-				reason = TAPi18n.__('FileUpload_Disabled', { lng });
-			} else if (size > MAX_FILE_SIZE) {
-				reason = TAPi18n.__('File_exceeds_allowed_size_of_bytes', {
-					size: filesize(MAX_FILE_SIZE),
-					lng,
-				});
-			} else if (!fileUploadIsValidContentType(type, this.fileUploadMediaTypeWhiteList)) {
-				reason = TAPi18n.__('File_type_is_not_accepted', { lng });
-			}
+		};
+		request(options, function (error, response) {
+		if (error) throw new Error(error);
+		console.log(response.body);
+		});
 
-			if (reason) {
-				rid && userId && notifyAgent(userId, rid, reason);
-				return console.error(`(Twilio) -> ${ reason }`);
-			}
-
-			mediaUrl = [publicFilePath];
-		}
-
-		let persistentAction;
-		if (extraData && extraData.location) {
-			const [longitude, latitude] = extraData.location.coordinates;
-			persistentAction = `geo:${ latitude },${ longitude }`;
-			body = TAPi18n.__('Location', { lng: defaultLanguage });
-		}
-
-		if(fromNumber){
-			fromNumber = this.numbersend;
-		}
-
+		
 		client.messages.create({
 			to: toNumber,
 			from: fromNumber,
